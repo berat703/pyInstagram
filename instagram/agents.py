@@ -1,7 +1,7 @@
 import aiohttp
 import asyncio
 import hashlib
-from .entities import (Account, Comment, Element, HasMediaElement,Media, Location, Story, Tag,
+from .entities import (Account, Comment, Element, HasMediaElement, Media, Location, Story, Tag,
                        UpdatableElement)
 from .exceptions import (AuthException, CheckpointException, ExceptionManager,
                          IncorrectVerificationTypeException, InstagramException,
@@ -11,7 +11,6 @@ import re
 import requests
 from requests.exceptions import HTTPError
 from time import sleep
-
 
 exception_manager = ExceptionManager()
 
@@ -55,7 +54,7 @@ class WebAgent:
 
             data = data["entry_data"]
             for key in obj.entry_data_path:
-                data=data[key]
+                data = data[key]
             obj.set_data(data)
 
             if not self.logger is None:
@@ -232,7 +231,7 @@ class WebAgent:
                 pointer = page_info["end_cursor"] if page_info["has_next_page"] else None
 
                 if len(edges) < count and page_info["has_next_page"]:
-                    count = count-len(edges)
+                    count = count - len(edges)
                     variables_string = \
                         '{{"shortcode":"{shortcode}","first":{first},"after":"{after}"}}'
                     sleep(delay)
@@ -271,7 +270,7 @@ class WebAgent:
                     data = data["edge_media_to_parent_comment"]
                 edges = data["edges"]
                 page_info = data["page_info"]
-                
+
                 for index in range(min(len(edges), count)):
                     node = edges[index]["node"]
                     c = Comment(node["id"], media=media,
@@ -284,7 +283,7 @@ class WebAgent:
                 pointer = page_info["end_cursor"] if page_info["has_next_page"] else None
 
                 if len(edges) < count and not pointer is None:
-                    count = count-len(edges)
+                    count = count - len(edges)
                 else:
                     if not self.logger is None:
                         self.logger.info("Get comments '%s' was successfull", media)
@@ -317,7 +316,7 @@ class WebAgent:
                 media.comments_count = data["count"]
                 edges = data["edges"]
                 page_info = data["page_info"]
-                
+
                 for index in range(min(len(edges), count)):
                     node = edges[index]["node"]
                     c = Comment(node["id"],
@@ -327,7 +326,7 @@ class WebAgent:
                                 created_at=node["created_at"])
                     media.comments.add(c)
                     comments.append(c)
-                
+
                 pointer = page_info["end_cursor"] if page_info["has_next_page"] else None
 
                 if len(edges) < count and page_info["has_next_page"]:
@@ -356,7 +355,7 @@ class WebAgent:
         settings = dict() if settings is None else settings.copy()
 
         if not "params" in settings:
-            settings["params"] = dict() 
+            settings["params"] = dict()
         settings["params"].update({"query_hash": query_hash})
 
         settings["params"]["variables"] = variables
@@ -638,7 +637,7 @@ class AsyncWebAgent:
                 pointer = page_info["end_cursor"] if page_info["has_next_page"] else None
 
                 if len(edges) < count and page_info["has_next_page"]:
-                    count = count-len(edges)
+                    count = count - len(edges)
                     variables_string = \
                         '{{"shortcode":"{shortcode}","first":{first},"after":"{after}"}}'
                     await asyncio.sleep(delay)
@@ -704,7 +703,7 @@ class AsyncWebAgent:
                     )
                 raise UnexpectedResponse(exception, media)
 
-        variables_string =  '{{"shortcode":"{code}","first":{first},"after":"{after}"}}'
+        variables_string = '{{"shortcode":"{code}","first":{first},"after":"{after}"}}'
         while True:
             data = {"after": pointer, "code": media.code, "first": min(limit, count)}
 
@@ -762,7 +761,7 @@ class AsyncWebAgent:
         settings = dict() if settings is None else settings.copy()
 
         if not "params" in settings:
-            settings["params"] = dict() 
+            settings["params"] = dict()
         settings["params"].update({"query_hash": query_hash})
 
         settings["params"]["variables"] = variables
@@ -871,12 +870,9 @@ class WebAgentAccount(Account, WebAgent):
                     url=checkpoint_url,
                     settings=settings,
                 )
-                raise CheckpointException(
-                    username=self.username,
-                    checkpoint_url=checkpoint_url,
-                    navigation=data["navigation"],
-                    types=data["types"],
-                )
+                return self.checkpoint_send(checkpoint_url=checkpoint_url,
+                                            forward_url=data.get("navigation")["forward"],
+                                            choice=data.get("types")[0]["value"])
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
                 self.logger.error("Auth was unsuccessfully: %s", str(exception))
@@ -980,14 +976,15 @@ class WebAgentAccount(Account, WebAgent):
             referer=url,
             url=url,
             data={"security_code": code},
-            settings=settings,
-        )
-
+            settings=settings)
         try:
-            result = response.json()["status"] == "ok"
             if not self.logger is None:
                 self.logger.info("Verify account '%s' was successfull")
-            return result
+            if response.json()["status"] == "ok":
+                return response
+            raise CheckpointException(
+                username=self.username,
+                checkpoint_url=url)
         except (AttributeError, KeyError, ValueError) as exception:
             if not self.logger is None:
                 self.logger.error(
@@ -1008,7 +1005,7 @@ class WebAgentAccount(Account, WebAgent):
         if obj is None:
             obj = self
         return WebAgent.get_media(self, obj, pointer=pointer, count=count, limit=limit, delay=delay,
-                               settings=settings)
+                                  settings=settings)
 
     @exception_manager.decorator
     def get_follows(self, account=None, pointer=None, count=20, limit=50, delay=0, settings=None):
@@ -1047,7 +1044,7 @@ class WebAgentAccount(Account, WebAgent):
                 referer="https://instagram.com/%s%s" % (
                     account.base_url,
                     getattr(account, account.primary_key),
-                ), 
+                ),
                 settings=settings,
             )
 
@@ -1486,7 +1483,7 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
     def __del__(self):
         Account.__del__(self)
 
-    async def delete(self):    
+    async def delete(self):
         await self.session.close()
 
     async def auth(self, password, settings=None):
@@ -1538,7 +1535,7 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
                 self.logger.error("Auth was unsuccessfully: %s", str(exception))
             raise UnexpectedResponse(exception, response.url)
         if not self.logger is None:
-            self.logger.info("Auth was successfully")       
+            self.logger.info("Auth was successfully")
 
     @exception_manager.decorator
     async def checkpoint_handle(self, url, settings=None):
@@ -1664,7 +1661,7 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
         if obj is None:
             obj = self
         return await AsyncWebAgent.get_media(self, obj, pointer=pointer, count=count, limit=limit,
-                                          delay=delay, settings=settings)
+                                             delay=delay, settings=settings)
 
     @exception_manager.decorator
     async def get_follows(self, account=None, pointer=None, count=20, limit=50, delay=0,
@@ -1909,7 +1906,7 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             self.logger.info("Like '%s' started", media)
         if not isinstance(media, Media):
             raise TypeError("'media' must be Media type")
-        
+
         if media.id is None:
             await self.update(media, settings=settings)
 
