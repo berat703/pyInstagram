@@ -898,11 +898,15 @@ class WebAgentAccount(Account, WebAgent):
             }
 
             data = data["extraData"]["content"]
-            data = list(filter(lambda item: item["__typename"] == "GraphChallengePageForm", data))
-            data = data[0]["fields"][0]["values"]
             types = []
-            for d in data:
-                types.append({"label": d["label"].lower().split(":")[0], "value": d["value"]})
+            data = list(filter(lambda item: item["__typename"] == "GraphChallengePageForm", data))
+            if "values" in data[0]["fields"][0]:
+                data = data[0]["fields"][0]["values"]
+                for d in data:
+                    types.append({"label": d["label"].lower().split(":")[0], "value": d["value"]})
+            else:
+                types.append({"label": "no-value", "value": None})
+
             if not self.logger is None:
                 self.logger.info("Handle checkpoint page for '%s' was successfull", self.username)
             return {"navigation": navigation, "types": types}
@@ -922,7 +926,7 @@ class WebAgentAccount(Account, WebAgent):
         response = self.action_request(
             referer=checkpoint_url,
             url=forward_url,
-            data={"choice": choice},
+            data=None if choice is None else {"choice": choice},
             settings=settings,
         )
 
