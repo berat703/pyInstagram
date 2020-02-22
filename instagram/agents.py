@@ -865,6 +865,8 @@ class WebAgentAccount(Account, WebAgent):
             if data.get("authenticated") is False:
                 raise AuthException(self.username)
             elif data.get("message") == "checkpoint_required":
+                if not self.logger is None:
+                    self.logger.info("Checkpoint required for '%s' started", self.username)
                 checkpoint_url = "https://instagram.com" + data.get("checkpoint_url")
                 data = self.checkpoint_handle(
                     url=checkpoint_url,
