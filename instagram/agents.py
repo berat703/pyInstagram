@@ -21,13 +21,15 @@ class WebAgent:
         self.csrf_token = None
         self.session = requests.Session()
         if cookies:
-            self.session.cookies = requests.cookies.cookiejar_from_dict(cookies)
+            self.session.cookies = requests.cookies.cookiejar_from_dict(
+                cookies)
         self.logger = logger
 
     @exception_manager.decorator
     def update(self, obj=None, settings=None):
         if not self.logger is None:
-            self.logger.info("Update '%s' started", "self" if obj is None else obj)
+            self.logger.info("Update '%s' started",
+                             "self" if obj is None else obj)
         if not isinstance(obj, UpdatableElement) and not obj is None:
             raise TypeError("obj must be UpdatableElement type or None")
         if not isinstance(settings, dict) and not settings is None:
@@ -58,7 +60,8 @@ class WebAgent:
             obj.set_data(data)
 
             if not self.logger is None:
-                self.logger.info("Update '%s' was successfull", "self" if obj is None else obj)
+                self.logger.info("Update '%s' was successfull",
+                                 "self" if obj is None else obj)
             return data
         except (AttributeError, KeyError, ValueError) as exception:
             if not self.logger is None:
@@ -118,10 +121,12 @@ class WebAgent:
                     return medias, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
-                    self.logger.error("Get media '%s' was unsuccessfull: %s", obj, str(exception))
+                    self.logger.error(
+                        "Get media '%s' was unsuccessfull: %s", obj, str(exception))
                 raise UnexpectedResponse(
                     exception,
-                    "https://www.instagram.com/" + obj.base_url + getattr(obj, obj.primary_key),
+                    "https://www.instagram.com/" + obj.base_url +
+                    getattr(obj, obj.primary_key),
                 )
 
         while True:
@@ -136,7 +141,8 @@ class WebAgent:
             response = self.graphql_request(
                 query_hash=obj.media_query_hash,
                 variables=variables_string.format(**data),
-                referer="https://instagram.com/" + obj.base_url + getattr(obj, obj.primary_key),
+                referer="https://instagram.com/" +
+                obj.base_url + getattr(obj, obj.primary_key),
                 settings=settings,
             )
 
@@ -170,7 +176,8 @@ class WebAgent:
                     return medias, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
-                    self.logger.error("Get media '%s' was unsuccessfull: %s", obj, str(exception))
+                    self.logger.error(
+                        "Get media '%s' was unsuccessfull: %s", obj, str(exception))
                 raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -213,7 +220,8 @@ class WebAgent:
             )
 
             try:
-                data = response.json()["data"]["shortcode_media"]["edge_liked_by"]
+                data = response.json()[
+                    "data"]["shortcode_media"]["edge_liked_by"]
                 edges = data["edges"]
                 page_info = data["page_info"]
                 media.likes_count = data["count"]
@@ -237,11 +245,13 @@ class WebAgent:
                     sleep(delay)
                 else:
                     if not self.logger is None:
-                        self.logger.info("Get likes '%s' was successfull", media)
+                        self.logger.info(
+                            "Get likes '%s' was successfull", media)
                     return likes, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
-                    self.logger.error("Get likes '%s' was unsuccessfull: %s", media, str(exception))
+                    self.logger.error(
+                        "Get likes '%s' was unsuccessfull: %s", media, str(exception))
                 raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -286,7 +296,8 @@ class WebAgent:
                     count = count - len(edges)
                 else:
                     if not self.logger is None:
-                        self.logger.info("Get comments '%s' was successfull", media)
+                        self.logger.info(
+                            "Get comments '%s' was successfull", media)
                     return comments, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
@@ -297,12 +308,13 @@ class WebAgent:
                     )
                 raise UnexpectedResponse(exception, media)
 
-        variables_string = '{{"shortcode":"{code}","first":{first},"after":"{after}"}}'
+        variables_string = '{{"shortcode":"{code}","first":{first},"after":{json.dumps(after)}}}'
         while True:
-            data = {"after": pointer, "code": media.code, "first": min(limit, count)}
+            data = {"after": pointer, "code": media.code,
+                    "first": min(limit, count)}
 
             response = self.graphql_request(
-                query_hash="f0986789a5c5d17c2400faebf16efd0d",
+                query_hash="bc3296d1ce80a24b1b6e40b1e72903f5",
                 variables=variables_string.format(**data),
                 referer="https://instagram.com/%s%s" % (
                     media.base_url,
@@ -312,7 +324,8 @@ class WebAgent:
             )
 
             try:
-                data = response.json()["data"]["shortcode_media"]["edge_media_to_comment"]
+                data = response.json()[
+                    "data"]["shortcode_media"]["edge_media_to_comment"]
                 media.comments_count = data["count"]
                 edges = data["edges"]
                 page_info = data["page_info"]
@@ -334,7 +347,8 @@ class WebAgent:
                     sleep(delay)
                 else:
                     if not self.logger is None:
-                        self.logger.info("Get comments '%s' was successfull", media)
+                        self.logger.info(
+                            "Get comments '%s' was successfull", media)
                     return comments, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
@@ -430,7 +444,8 @@ class AsyncWebAgent:
     @exception_manager.decorator
     async def update(self, obj=None, settings=None):
         if not self.logger is None:
-            self.logger.info("Update '%s' started", "self" if obj is None else obj)
+            self.logger.info("Update '%s' started",
+                             "self" if obj is None else obj)
         if not isinstance(obj, UpdatableElement) and not obj is None:
             raise TypeError("obj must be UpdatableElement type or None")
         if not isinstance(settings, dict) and not settings is None:
@@ -461,7 +476,8 @@ class AsyncWebAgent:
             obj.set_data(data)
 
             if not self.logger is None:
-                self.logger.info("Update '%s' was successfull", "self" if obj is None else obj)
+                self.logger.info("Update '%s' was successfull",
+                                 "self" if obj is None else obj)
             return data
         except (AttributeError, KeyError, ValueError) as exception:
             if not self.logger is None:
@@ -521,10 +537,12 @@ class AsyncWebAgent:
                     return medias, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
-                    self.logger.error("Get media '%s' was unsuccessfull: %s", obj, str(exception))
+                    self.logger.error(
+                        "Get media '%s' was unsuccessfull: %s", obj, str(exception))
                 raise UnexpectedResponse(
                     exception,
-                    "https://www.instagram.com/" + obj.base_url + getattr(obj, obj.primary_key),
+                    "https://www.instagram.com/" + obj.base_url +
+                    getattr(obj, obj.primary_key),
                 )
 
         while True:
@@ -576,7 +594,8 @@ class AsyncWebAgent:
                     return medias, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
-                    self.logger.error("Get media '%s' was unsuccessfull: %s", obj, str(exception))
+                    self.logger.error(
+                        "Get media '%s' was unsuccessfull: %s", obj, str(exception))
                 raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -643,11 +662,13 @@ class AsyncWebAgent:
                     await asyncio.sleep(delay)
                 else:
                     if not self.logger is None:
-                        self.logger.info("Get likes '%s' was successfull", media)
+                        self.logger.info(
+                            "Get likes '%s' was successfull", media)
                     return likes, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
-                    self.logger.error("Get likes '%s' was unsuccessfull: %s", media, str(exception))
+                    self.logger.error(
+                        "Get likes '%s' was unsuccessfull: %s", media, str(exception))
                 raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -692,7 +713,8 @@ class AsyncWebAgent:
                     count = count - len(edges)
                 else:
                     if not self.logger is None:
-                        self.logger.info("Get comments '%s' was successfull", media)
+                        self.logger.info(
+                            "Get comments '%s' was successfull", media)
                     return comments, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
@@ -703,12 +725,13 @@ class AsyncWebAgent:
                     )
                 raise UnexpectedResponse(exception, media)
 
-        variables_string = '{{"shortcode":"{code}","first":{first},"after":"{after}"}}'
+        variables_string = '{{"shortcode":"{code}","first":{first},"after":{json.dumps(after)}}}'
         while True:
-            data = {"after": pointer, "code": media.code, "first": min(limit, count)}
+            data = {"after": pointer, "code": media.code,
+                    "first": min(limit, count)}
 
             response = await self.graphql_request(
-                query_hash="f0986789a5c5d17c2400faebf16efd0d",
+                query_hash="bc3296d1ce80a24b1b6e40b1e72903f5",
                 variables=variables_string.format(**data),
                 referer="https://instagram.com/%s%s" % (
                     media.base_url,
@@ -740,7 +763,8 @@ class AsyncWebAgent:
                     await asyncio.sleep(delay)
                 else:
                     if not self.logger is None:
-                        self.logger.info("Get comments '%s' was successfull", media)
+                        self.logger.info(
+                            "Get comments '%s' was successfull", media)
                     return comments, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
@@ -850,7 +874,8 @@ class WebAgentAccount(Account, WebAgent):
         })
         if not "data" in settings:
             settings["data"] = {}
-        settings["data"].update({"username": self.username, "password": password})
+        settings["data"].update(
+            {"username": self.username, "password": password})
 
         try:
             response = self.post_request(
@@ -866,18 +891,22 @@ class WebAgentAccount(Account, WebAgent):
                 raise AuthException(self.username)
             elif data.get("message") == "checkpoint_required":
                 if not self.logger is None:
-                    self.logger.info("Checkpoint required for '%s' started", self.username)
-                checkpoint_url = "https://instagram.com" + data.get("checkpoint_url")
+                    self.logger.info(
+                        "Checkpoint required for '%s' started", self.username)
+                checkpoint_url = "https://instagram.com" + \
+                    data.get("checkpoint_url")
                 data = self.checkpoint_handle(
                     url=checkpoint_url,
                     settings=settings,
                 )
                 return self.checkpoint_send(checkpoint_url=checkpoint_url,
-                                            forward_url=data.get("navigation")["forward"],
+                                            forward_url=data.get("navigation")[
+                                                "forward"],
                                             choice=data.get("types")[0]["value"])
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Auth was unsuccessfully: %s", str(exception))
+                self.logger.error(
+                    "Auth was unsuccessfully: %s", str(exception))
             raise UnexpectedResponse(exception, response.url)
         if not self.logger is None:
             self.logger.info("Auth was successfully")
@@ -885,7 +914,8 @@ class WebAgentAccount(Account, WebAgent):
     @exception_manager.decorator
     def checkpoint_handle(self, url, settings=None):
         if not self.logger is None:
-            self.logger.info("Handle checkpoint page for '%s' started", self.username)
+            self.logger.info(
+                "Handle checkpoint page for '%s' started", self.username)
         response = self.get_request(url, **settings)
         try:
             match = re.search(
@@ -901,16 +931,19 @@ class WebAgentAccount(Account, WebAgent):
 
             data = data["extraData"]["content"]
             types = []
-            data = list(filter(lambda item: item["__typename"] == "GraphChallengePageForm", data))
+            data = list(
+                filter(lambda item: item["__typename"] == "GraphChallengePageForm", data))
             if "values" in data[0]["fields"][0]:
                 data = data[0]["fields"][0]["values"]
                 for d in data:
-                    types.append({"label": d["label"].lower().split(":")[0], "value": d["value"]})
+                    types.append({"label": d["label"].lower().split(
+                        ":")[0], "value": d["value"]})
             else:
                 types.append({"label": "no-value", "value": None})
 
             if not self.logger is None:
-                self.logger.info("Handle checkpoint page for '%s' was successfull", self.username)
+                self.logger.info(
+                    "Handle checkpoint page for '%s' was successfull", self.username)
             return {"navigation": navigation, "types": types}
         except (AttributeError, KeyError, ValueError) as exception:
             if not self.logger is None:
@@ -924,7 +957,8 @@ class WebAgentAccount(Account, WebAgent):
     @exception_manager.decorator
     def checkpoint_send(self, checkpoint_url, forward_url, choice, settings=None):
         if not self.logger is None:
-            self.logger.info("Send verify code for '%s' started", self.username)
+            self.logger.info(
+                "Send verify code for '%s' started", self.username)
         response = self.action_request(
             referer=checkpoint_url,
             url=forward_url,
@@ -935,7 +969,8 @@ class WebAgentAccount(Account, WebAgent):
         try:
             navigation = response.json()["navigation"]
             if not self.logger is None:
-                self.logger.info("Send verify code for '%s' was successfully", self.username)
+                self.logger.info(
+                    "Send verify code for '%s' was successfully", self.username)
             return {
                 key: "https://instagram.com" + value for key, value in navigation.items()
             }
@@ -1078,7 +1113,8 @@ class WebAgentAccount(Account, WebAgent):
                     sleep(delay)
                 else:
                     if not self.logger is None:
-                        self.logger.info("Get '%s' follows was successfully", account)
+                        self.logger.info(
+                            "Get '%s' follows was successfully", account)
                     return follows, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
@@ -1154,7 +1190,8 @@ class WebAgentAccount(Account, WebAgent):
                     sleep(delay)
                 else:
                     if not self.logger is None:
-                        self.logger.info("Get '%s' followers was successfully", account)
+                        self.logger.info(
+                            "Get '%s' followers was successfully", account)
                     return followers, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
@@ -1172,18 +1209,21 @@ class WebAgentAccount(Account, WebAgent):
         response = self.graphql_request(
             query_hash="60b755363b5c230111347a7a4e242001",
             variables='{"only_stories":true}',
-            referer="https://instagram.com/%s%s" % (self.base_url, getattr(self, self.primary_key)),
+            referer="https://instagram.com/%s%s" % (
+                self.base_url, getattr(self, self.primary_key)),
             settings=settings,
         )
 
         try:
-            data = response.json()["data"]["user"]["feed_reels_tray"]["edge_reels_tray_to_reel"]
+            data = response.json()[
+                "data"]["user"]["feed_reels_tray"]["edge_reels_tray_to_reel"]
             if not self.logger is None:
                 self.logger.info("Get stories was successfully")
             return [Story(edge["node"]["id"]) for edge in data["edges"]]
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Get stories was unsuccessfully: %s", str(exception))
+                self.logger.error(
+                    "Get stories was unsuccessfully: %s", str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1218,7 +1258,8 @@ class WebAgentAccount(Account, WebAgent):
             )
 
             try:
-                data = response.json()["data"]["user"]["edge_web_feed_timeline"]
+                data = response.json()[
+                    "data"]["user"]["edge_web_feed_timeline"]
                 edges = data["edges"]
                 page_info = data["page_info"]
                 length = len(edges)
@@ -1243,7 +1284,8 @@ class WebAgentAccount(Account, WebAgent):
                     return feed, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
-                    self.logger.error("Get feed was unsuccessfully: %s", str(exception))
+                    self.logger.error(
+                        "Get feed was unsuccessfully: %s", str(exception))
                 raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1268,7 +1310,8 @@ class WebAgentAccount(Account, WebAgent):
             return response.json()["status"] == "ok"
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Like '%s' was unsuccessfully: %s", media, str(exception))
+                self.logger.error(
+                    "Like '%s' was unsuccessfully: %s", media, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1294,7 +1337,8 @@ class WebAgentAccount(Account, WebAgent):
             return result
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Like '%s' was unsuccessfully: %s", media, str(exception))
+                self.logger.error(
+                    "Like '%s' was unsuccessfully: %s", media, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1319,7 +1363,8 @@ class WebAgentAccount(Account, WebAgent):
             return response.json()["status"] == "ok"
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Save '%s' was unsuccessfully: %s", media, str(exception))
+                self.logger.error(
+                    "Save '%s' was unsuccessfully: %s", media, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1345,7 +1390,8 @@ class WebAgentAccount(Account, WebAgent):
             return result
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Unsave '%s' was unsuccessfully: %s", media, str(exception))
+                self.logger.error(
+                    "Unsave '%s' was unsuccessfully: %s", media, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1384,7 +1430,8 @@ class WebAgentAccount(Account, WebAgent):
             return comment
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Comment '%s' was unsuccessfully: %s", media, str(exception))
+                self.logger.error(
+                    "Comment '%s' was unsuccessfully: %s", media, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1411,7 +1458,8 @@ class WebAgentAccount(Account, WebAgent):
             if result:
                 del comment
             if not self.logger is None:
-                self.logger.info("Delete comment '%s' was successfully", comment)
+                self.logger.info(
+                    "Delete comment '%s' was successfully", comment)
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
                 self.logger.error(
@@ -1444,7 +1492,8 @@ class WebAgentAccount(Account, WebAgent):
             return result
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Follow to '%s' was unsuccessfully: %s", account, str(exception))
+                self.logger.error(
+                    "Follow to '%s' was unsuccessfully: %s", account, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1513,7 +1562,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
         })
         if not "data" in settings:
             settings["data"] = {}
-        settings["data"].update({"username": self.username, "password": password})
+        settings["data"].update(
+            {"username": self.username, "password": password})
 
         response = await self.post_request(
             "https://www.instagram.com/accounts/login/ajax/",
@@ -1525,7 +1575,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             if data.get("authenticated") is False:
                 raise AuthException(self.username)
             elif data.get("message") == "checkpoint_required":
-                checkpoint_url = "https://instagram.com" + data.get("checkpoint_url")
+                checkpoint_url = "https://instagram.com" + \
+                    data.get("checkpoint_url")
                 data = await self.checkpoint_handle(
                     url=checkpoint_url,
                     settings=settings,
@@ -1538,7 +1589,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
                 )
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Auth was unsuccessfully: %s", str(exception))
+                self.logger.error(
+                    "Auth was unsuccessfully: %s", str(exception))
             raise UnexpectedResponse(exception, response.url)
         if not self.logger is None:
             self.logger.info("Auth was successfully")
@@ -1546,7 +1598,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
     @exception_manager.decorator
     async def checkpoint_handle(self, url, settings=None):
         if not self.logger is None:
-            self.logger.info("Handle checkpoint page for '%s' started", self.username)
+            self.logger.info(
+                "Handle checkpoint page for '%s' started", self.username)
         response = await self.get_request(url, **settings)
         try:
             match = re.search(
@@ -1561,13 +1614,16 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             }
 
             data = data["extraData"]["content"]
-            data = list(filter(lambda item: item["__typename"] == "GraphChallengePageForm", data))
+            data = list(
+                filter(lambda item: item["__typename"] == "GraphChallengePageForm", data))
             data = data[0]["fields"][0]["values"]
             types = []
             for d in data:
-                types.append({"label": d["label"].lower().split(":")[0], "value": d["value"]})
+                types.append({"label": d["label"].lower().split(
+                    ":")[0], "value": d["value"]})
             if not self.logger is None:
-                self.logger.info("Handle checkpoint page for '%s' was successfull", self.username)
+                self.logger.info(
+                    "Handle checkpoint page for '%s' was successfull", self.username)
             return {"navigation": navigation, "types": types}
         except (AttributeError, KeyError, ValueError) as exception:
             if not self.logger is None:
@@ -1581,7 +1637,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
     @exception_manager.decorator
     async def checkpoint_send(self, checkpoint_url, forward_url, choice, settings=None):
         if not self.logger is None:
-            self.logger.info("Send verify code for '%s' started", self.username)
+            self.logger.info(
+                "Send verify code for '%s' started", self.username)
         response = await self.action_request(
             referer=checkpoint_url,
             url=forward_url,
@@ -1592,7 +1649,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
         try:
             navigation = (await response.json())["navigation"]
             if not self.logger is None:
-                self.logger.info("Send verify code for '%s' was successfully", self.username)
+                self.logger.info(
+                    "Send verify code for '%s' was successfully", self.username)
             return {
                 key: "https://instagram.com" + value for key, value in navigation.items()
             }
@@ -1645,7 +1703,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
         try:
             result = (await response.json())["status"] == "ok"
             if not self.logger is None:
-                self.logger.info("Verify account '%s' was successfull", self.username)
+                self.logger.info(
+                    "Verify account '%s' was successfull", self.username)
             return result
         except (AttributeError, KeyError, ValueError) as exception:
             if not self.logger is None:
@@ -1735,7 +1794,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
                     await asyncio.sleep(delay)
                 else:
                     if not self.logger is None:
-                        self.logger.info("Get '%s' follows was successfully", account)
+                        self.logger.info(
+                            "Get '%s' follows was successfully", account)
                     return follows, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
@@ -1812,7 +1872,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
                     await asyncio.sleep(delay)
                 else:
                     if not self.logger is None:
-                        self.logger.info("Get '%s' followers was successfully", account)
+                        self.logger.info(
+                            "Get '%s' followers was successfully", account)
                     return followers, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
@@ -1830,7 +1891,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
         response = await self.graphql_request(
             query_hash="60b755363b5c230111347a7a4e242001",
             variables='{"only_stories":true}',
-            referer="https://instagram.com/%s%s" % (self.base_url, getattr(self, self.primary_key)),
+            referer="https://instagram.com/%s%s" % (
+                self.base_url, getattr(self, self.primary_key)),
             settings=settings,
         )
 
@@ -1843,7 +1905,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             return result
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Get stories was unsuccessfully: %s", str(exception))
+                self.logger.error(
+                    "Get stories was unsuccessfully: %s", str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1903,7 +1966,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
                     return feed, pointer
             except (ValueError, KeyError) as exception:
                 if not self.logger is None:
-                    self.logger.error("Get feed was unsuccessfully: %s", str(exception))
+                    self.logger.error(
+                        "Get feed was unsuccessfully: %s", str(exception))
                 raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1929,7 +1993,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             return result
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Like '%s' was unsuccessfully: %s", media, str(exception))
+                self.logger.error(
+                    "Like '%s' was unsuccessfully: %s", media, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1955,7 +2020,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             return result
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Like '%s' was unsuccessfully: %s", media, str(exception))
+                self.logger.error(
+                    "Like '%s' was unsuccessfully: %s", media, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -1981,7 +2047,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             return result
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Save '%s' was unsuccessfully: %s", media, str(exception))
+                self.logger.error(
+                    "Save '%s' was unsuccessfully: %s", media, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -2007,7 +2074,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             return result
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Unsave '%s' was unsuccessfully: %s", media, str(exception))
+                self.logger.error(
+                    "Unsave '%s' was unsuccessfully: %s", media, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -2046,7 +2114,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             return comment
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Comment '%s' was unsuccessfully: %s", media, str(exception))
+                self.logger.error(
+                    "Comment '%s' was unsuccessfully: %s", media, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
@@ -2073,7 +2142,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             if result:
                 del comment
             if not self.logger is None:
-                self.logger.info("Delete comment '%s' was successfully", comment)
+                self.logger.info(
+                    "Delete comment '%s' was successfully", comment)
             return result
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
@@ -2107,7 +2177,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             return result
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
-                self.logger.error("Follow to '%s' was unsuccessfully: %s", account, str(exception))
+                self.logger.error(
+                    "Follow to '%s' was unsuccessfully: %s", account, str(exception))
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
