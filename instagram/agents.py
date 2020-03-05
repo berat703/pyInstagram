@@ -47,6 +47,11 @@ class WebAgent:
                 r"<script[^>]*>\s*window._sharedData\s*=\s*((?!<script>).*)\s*;\s*</script>",
                 response.text,
             )
+            additional_match = re.search(
+                r"<script[^>]*>\s*window.__additionalDataLoaded(\(.*?)\',((?!<script>).*)\s*\);\s*</script>",
+                response.text,
+            )
+
             data = json.loads(match.group(1))
             self.rhx_gis = data.get("rhx_gis", "")
             self.csrf_token = data["config"]["csrf_token"]
@@ -54,10 +59,14 @@ class WebAgent:
             if obj is None:
                 return None
 
-            data = data["entry_data"]
-            for key in obj.entry_data_path:
-                data = data[key]
-            obj.set_data(data)
+            if additional_match is not None:
+                additional_data = json.loads(additional_match.group(2))["graphql"]["shortcode_media"]
+                obj.set_data(additional_data)
+            else:
+                data = data["entry_data"]
+                for key in obj.entry_data_path:
+                    data = data[key]
+                obj.set_data(data)
 
             if not self.logger is None:
                 self.logger.info("Update '%s' was successfull",
