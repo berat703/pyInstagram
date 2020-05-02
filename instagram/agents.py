@@ -151,7 +151,7 @@ class WebAgent:
                 query_hash=obj.media_query_hash,
                 variables=variables_string.format(**data),
                 referer="https://instagram.com/" +
-                obj.base_url + getattr(obj, obj.primary_key),
+                        obj.base_url + getattr(obj, obj.primary_key),
                 settings=settings,
             )
 
@@ -411,6 +411,7 @@ class WebAgent:
             "X-CSRFToken": self.csrf_token,
             "X-Instagram-Ajax": "1",
             "X-Requested-With": "XMLHttpRequest",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36",
         }
         if "headers" in settings:
             settings["headers"].update(headers)
@@ -827,6 +828,7 @@ class AsyncWebAgent:
             "X-CSRFToken": self.csrf_token,
             "X-Instagram-AJAX": "1",
             "X-Requested-With": "XMLHttpRequest",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36",
         }
         if "headers" in settings:
             settings["headers"].update(headers)
@@ -903,7 +905,7 @@ class WebAgentAccount(Account, WebAgent):
                     self.logger.info(
                         "Checkpoint required for '%s' started", self.username)
                 checkpoint_url = "https://instagram.com" + \
-                    data.get("checkpoint_url")
+                                 data.get("checkpoint_url")
                 data = self.checkpoint_handle(
                     url=checkpoint_url,
                     settings=settings,
@@ -912,6 +914,8 @@ class WebAgentAccount(Account, WebAgent):
                                             forward_url=data.get("navigation")[
                                                 "forward"],
                                             choice=data.get("types")[0]["value"])
+            elif data.get("two_factor_required"):
+                return data
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
                 self.logger.error(
@@ -1035,6 +1039,32 @@ class WebAgentAccount(Account, WebAgent):
             raise CheckpointException(
                 username=self.username,
                 checkpoint_url=url)
+        except (AttributeError, KeyError, ValueError) as exception:
+            if not self.logger is None:
+                self.logger.error(
+                    "Verify account '%s' was unsuccessfull: %s",
+                    self.username,
+                    str(exception),
+                )
+            raise UnexpectedResponse(exception, response.url)
+
+    @exception_manager.decorator
+    def two_fact_auth_send(self, data, settings=None):
+        if not self.logger is None:
+            self.logger.info("Verify account '%s' started")
+        response = self.action_request(
+            referer="https://www.instagram.com/accounts/login/two_factor?next=%2F",
+            url="https://www.instagram.com/accounts/login/ajax/two_factor/",
+            data=data,
+            settings=settings)
+        try:
+            if not self.logger is None:
+                self.logger.info("Verify account '%s' was successfull")
+            if response.json()["status"] == "ok":
+                return response
+            raise CheckpointException(
+                username=self.username,
+                checkpoint_url=data["identifier"])
         except (AttributeError, KeyError, ValueError) as exception:
             if not self.logger is None:
                 self.logger.error(
@@ -1585,7 +1615,7 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
                 raise AuthException(self.username)
             elif data.get("message") == "checkpoint_required":
                 checkpoint_url = "https://instagram.com" + \
-                    data.get("checkpoint_url")
+                                 data.get("checkpoint_url")
                 data = await self.checkpoint_handle(
                     url=checkpoint_url,
                     settings=settings,
