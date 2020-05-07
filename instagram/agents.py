@@ -425,20 +425,30 @@ class WebAgent:
         return self.post_request(url, **settings)
 
     def get_request(self, *args, **kwargs):
-        try:
-            response = self.session.get(*args, **kwargs)
-            response.raise_for_status()
-            return response
-        except (requests.exceptions.RequestException, ConnectionResetError) as exception:
-            raise InternetException(exception)
+        tries = 3
+        for i in range(tries):
+            try:
+                response = self.session.get(*args, **kwargs)
+                response.raise_for_status()
+                return response
+            except (requests.exceptions.RequestException, ConnectionResetError) as exception:
+                if i < tries - 1:
+                    continue
+                else:
+                    raise InternetException(exception)
 
     def post_request(self, *args, **kwargs):
-        try:
-            response = self.session.post(*args, **kwargs)
-            response.raise_for_status()
-            return response
-        except (requests.exceptions.RequestException, ConnectionResetError) as exception:
-            raise InternetException(exception)
+        tries = 3
+        for i in range(tries):
+            try:
+                response = self.session.post(*args, **kwargs)
+                response.raise_for_status()
+                return response
+            except (requests.exceptions.RequestException, ConnectionResetError) as exception:
+                if i < tries - 1:
+                    continue
+                else:
+                    raise InternetException(exception)
 
 
 class AsyncWebAgent:
