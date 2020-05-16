@@ -425,30 +425,20 @@ class WebAgent:
         return self.post_request(url, **settings)
 
     def get_request(self, *args, **kwargs):
-        tries = 3
-        for i in range(tries):
-            try:
-                response = self.session.get(*args, **kwargs)
-                response.raise_for_status()
-                return response
-            except (requests.exceptions.RequestException, ConnectionResetError) as exception:
-                if i < tries - 1:
-                    continue
-                else:
-                    raise InternetException(exception)
+        try:
+            response = self.session.get(*args, **kwargs)
+            response.raise_for_status()
+            return response
+        except (requests.exceptions.RequestException, ConnectionResetError) as exception:
+            raise InternetException(exception)
 
     def post_request(self, *args, **kwargs):
-        tries = 3
-        for i in range(tries):
-            try:
-                response = self.session.post(*args, **kwargs)
-                response.raise_for_status()
-                return response
-            except (requests.exceptions.RequestException, ConnectionResetError) as exception:
-                if i < tries - 1:
-                    continue
-                else:
-                    raise InternetException(exception)
+        try:
+            response = self.session.post(*args, **kwargs)
+            response.raise_for_status()
+            return response
+        except (requests.exceptions.RequestException, ConnectionResetError) as exception:
+            raise InternetException(exception)
 
 
 class AsyncWebAgent:
@@ -874,10 +864,10 @@ class WebAgentAccount(Account, WebAgent):
         WebAgent.__init__(self, cookies=cookies, logger=logger)
 
     @exception_manager.decorator
-    def auth(self, password, settings=None):
+    def auth(self, enc_password, settings=None):
         if not self.logger is None:
             self.logger.info("Auth started")
-        if not isinstance(password, str):
+        if not isinstance(enc_password, str):
             raise TypeError("'password' must be str type")
         if not isinstance(settings, dict) and not settings is None:
             raise TypeError("'settings' must be dict type or None")
@@ -896,7 +886,7 @@ class WebAgentAccount(Account, WebAgent):
         if not "data" in settings:
             settings["data"] = {}
         settings["data"].update(
-            {"username": self.username, "password": password})
+            {"username": self.username, "enc_password": enc_password})
 
         try:
             response = self.post_request(
@@ -910,6 +900,8 @@ class WebAgentAccount(Account, WebAgent):
             data = response.json()
             if data.get("authenticated") is False:
                 raise AuthException(self.username)
+            if data.get("status") == "fail" and not data.get("two_factor_required"):
+                raise Exception
             elif data.get("message") == "checkpoint_required":
                 if not self.logger is None:
                     self.logger.info(
@@ -1623,6 +1615,8 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             data = await response.json()
             if data.get("authenticated") is False:
                 raise AuthException(self.username)
+            if data.get("status") == "fail" and not data.get("two_factor_required"):
+                raise Exception
             elif data.get("message") == "checkpoint_required":
                 checkpoint_url = "https://instagram.com" + \
                                  data.get("checkpoint_url")
