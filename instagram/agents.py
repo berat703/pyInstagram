@@ -73,6 +73,13 @@ class WebAgent:
                                  "self" if obj is None else obj)
             return data
         except (AttributeError, KeyError, ValueError) as exception:
+            if isinstance(exception, KeyError):
+                self.logger.error(
+                    "Update '%s' was unsuccessfull: %s",
+                    "self" if obj is None else obj,
+                    str(exception),
+                )
+                return
             if not self.logger is None:
                 self.logger.error(
                     "Update '%s' was unsuccessfull: %s",
