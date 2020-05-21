@@ -394,6 +394,7 @@ class WebAgent:
             settings["headers"] = dict()
         settings["headers"].update({
             # "X-IG-App-ID": "936619743392459",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36",
             "X-Instagram-GIS": hashlib.md5(gis.encode("utf-8")).hexdigest(),
             "X-Requested-With": "XMLHttpRequest",
             "Referer": referer,
@@ -811,6 +812,7 @@ class AsyncWebAgent:
             settings["headers"] = dict()
         settings["headers"].update({
             # "X-IG-App-ID": "936619743392459",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36",
             "X-Instagram-GIS": hashlib.md5(gis.encode("utf-8")).hexdigest(),
             "X-Requested-With": "XMLHttpRequest",
             "Referer": referer,
@@ -886,6 +888,7 @@ class WebAgentAccount(Account, WebAgent):
             settings["headers"] = {}
         settings["headers"].update({
             "X-IG-App-ID": "936619743392459",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36",
             # "X_Instagram-AJAX": "ee72defd9231",
             "X-CSRFToken": self.csrf_token,
             "Referer": "https://www.instagram.com/",
@@ -1604,6 +1607,7 @@ class AsyncWebAgentAccount(Account, AsyncWebAgent):
             settings["headers"] = {}
         settings["headers"].update({
             "X-IG-App-ID": "936619743392459",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36",
             # "X_Instagram-AJAX": "ee72defd9231",
             "X-CSRFToken": self.csrf_token,
             "Referer": "https://www.instagram.com/",
