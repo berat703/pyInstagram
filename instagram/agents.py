@@ -910,9 +910,7 @@ class WebAgentAccount(Account, WebAgent):
             data = response.json()
             if data.get("authenticated") is False:
                 raise AuthException(self.username)
-            if data.get("status") == "fail" and not data.get("two_factor_required"):
-                raise Exception
-            elif data.get("message") == "checkpoint_required":
+            if data.get("message") == "checkpoint_required":
                 if not self.logger is None:
                     self.logger.info(
                         "Checkpoint required for '%s' started", self.username)
@@ -928,6 +926,9 @@ class WebAgentAccount(Account, WebAgent):
                                             choice=data.get("types")[0]["value"])
             elif data.get("two_factor_required"):
                 return data
+            if data.get("status") == "fail" and not data.get("two_factor_required"):
+                self.logger.error("An error occurred when login step %s", str(data.get("message")))
+                raise UnexpectedResponse(data.get("message"), response.url)
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
                 self.logger.error(
