@@ -928,7 +928,7 @@ class WebAgentAccount(Account, WebAgent):
                 return data
             if data.get("status") == "fail" and not data.get("two_factor_required"):
                 self.logger.error("An error occurred when login step %s", str(data.get("message")))
-                raise UnexpectedResponse(data.get("message"), response.url)
+                raise CheckpointException(data.get("message"), response.url)
         except (ValueError, KeyError) as exception:
             if not self.logger is None:
                 self.logger.error(
