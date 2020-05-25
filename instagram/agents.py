@@ -87,7 +87,6 @@ class WebAgent:
                     str(exception),
                 )
                 return
-            raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
     def get_media(self, obj, pointer=None, count=12, limit=50, delay=0, settings=None):
@@ -505,7 +504,7 @@ class AsyncWebAgent:
                     "self" if obj is None else obj,
                     str(exception),
                 )
-            raise UnexpectedResponse(exception, response.url)
+            return
 
     @exception_manager.decorator
     async def get_media(self, obj, pointer=None, count=12, limit=50, delay=0, settings=None):
