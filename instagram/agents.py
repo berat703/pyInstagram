@@ -86,6 +86,7 @@ class WebAgent:
                     "self" if obj is None else obj,
                     str(exception),
                 )
+                return
             raise UnexpectedResponse(exception, response.url)
 
     @exception_manager.decorator
